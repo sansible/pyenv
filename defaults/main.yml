@@ -1,0 +1,7 @@
+---
+
+sansible_pyenv:
+  activate: no
+  python_version: ~
+  python_modules: [ ]
+  user: root

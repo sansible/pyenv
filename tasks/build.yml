@@ -1,0 +1,89 @@
+---
+
+- name: Install Prerequisites for pyenv
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+    - build-essential
+    - curl
+    - git
+    - libbz2-dev
+    - libncurses5-dev
+    - libreadline-dev
+    - libsqlite3-dev
+    - libssl-dev
+    - llvm
+    - make
+    - tk-dev
+    - wget
+    - xz-utils
+    - zlib1g-dev
+
+- name: Install pyenv
+  become: yes
+  become_user: "{{ sansible_pyenv.user }}"
+  git:
+    clone: yes
+    dest: ~/.pyenv/
+    repo: https://github.com/pyenv/pyenv.git
+    update: yes
+
+- name: Enable pyenv
+  become: yes
+  become_user: "{{ sansible_pyenv.user }}"
+  blockinfile:
+    backup: yes
+    block: |
+      export PYENV_ROOT="$HOME/.pyenv"
+      export PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init -)"
+    create: yes
+    dest: ~/.profile
+    marker: "# {mark} sansible.pyenv managed block"
+    mode: 0640
+
+- name: Install Python
+  become: yes
+  become_user: "{{ sansible_pyenv.user }}"
+  command: "bash -lc 'pyenv install {{ sansible_pyenv.python_version }}'"
+  args:
+    creates: "~/.pyenv/versions/{{ sansible_pyenv.python_version }}/bin/python"
+  when: sansible_pyenv.python_version != "system"
+
+- name: Ensure requested Python Version is installed
+  become: yes
+  become_user: "{{ sansible_pyenv.user }}"
+  command: bash -lc "pyenv versions --bare --skip-aliases"
+  changed_when: no
+  register: pyenv_versions_list
+  failed_when:
+    - sansible_pyenv.python_version not in  pyenv_versions_list.stdout
+    - sansible_pyenv.python_version != "system"
+
+- name: Install Python Modules
+  become: yes
+  become_user: "{{ sansible_pyenv.user }}"
+  pip:
+    executable: "~/.pyenv/versions/{{ sansible_pyenv.python_version }}/bin/pip"
+    name: "{{ item }}"
+  with_items: "{{ sansible_pyenv.python_modules }}"
+  when: sansible_pyenv.python_version != "system"
+
+- name: Get Current Global Python Version
+  become: yes
+  become_user: "{{ sansible_pyenv.user }}"
+  command: bash -lc "pyenv global"
+  changed_when: no
+  register: global_version
+
+- name: Activate Python Version
+  become: yes
+  become_user: "{{ sansible_pyenv.user }}"
+  command: "bash -lc 'pyenv global {{ sansible_pyenv.python_version }}'"
+  when:
+    - sansible_pyenv.activate
+    - sansible_pyenv.python_version != global_version.stdout

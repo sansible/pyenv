@@ -1,0 +1,19 @@
+---
+
+allow_duplicates: yes
+dependencies: [ ]
+
+galaxy_info:
+  author: Dennis Conrad
+  description: Install pyenv and Python Versions
+  license: MIT
+  min_ansible_version: 2.0
+  platforms:
+    - name: Ubuntu
+      versions:
+        - trusty
+        - xenial
+        - zesty
+        - artful
+  categories:
+    - development
