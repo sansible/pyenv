@@ -2,7 +2,7 @@
 
 - name: Assert Python Version was specified
   assert:
-    that: sansible_pyenv.python_version is not none
+    that: sansible_pyenv_python_version is not none
     msg: Python Version must be specified
 
 - name: Install pyenv

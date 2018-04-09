@@ -1,0 +1,13 @@
+---
+
+- name: Converge
+  hosts: all
+
+  roles:
+    - role: pyenv
+      sansible_pyenv_activate: yes
+      sansible_pyenv_python_modules:
+        - ansible
+        - pytest
+      sansible_pyenv_python_user: root
+      sansible_pyenv_python_version: 2.7.14
