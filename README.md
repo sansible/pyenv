@@ -3,7 +3,6 @@
 Master: [![Build Status](https://travis-ci.org/sansible/pyenv.svg?branch=master)](https://travis-ci.org/sansible/pyenv)  
 Develop: [![Build Status](https://travis-ci.org/sansible/pyenv.svg?branch=develop)](https://travis-ci.org/sansible/pyenv)
 
-* [ansible.cfg](#ansible-cfg)
 * [Installation and Dependencies](#installation-and-dependencies)
 * [Tags](#tags)
 * [Arguments](#Arguments)
@@ -14,18 +13,7 @@ This role configures pyenv, compiles Python versions from source, and installs P
 
 It can be run muliple times for multiple Python versions and users.
 
-**Note:** Module installation will be skipped if `python_version` is "system"; use the ansible `pip` module for this task instead.
-
-
-## ansible.cfg
-
-This role is designed to work with merge "hash_behaviour". Make sure your
-ansible.cfg contains these settings
-
-```INI
-[defaults]
-hash_behaviour = merge
-```
+**Note:** Module installation will be skipped if `sansible_pyenv_python_version` is "system"; use the ansible `pip` module for this task instead.
 
 
 ## Installation and Dependencies
@@ -35,7 +23,7 @@ or add this to your `roles.yml`
 
 ```YAML
 - name: sansible.pyenv
-  version: v1.0
+  version: v2.0
 ```
 
 and run `ansible-galaxy install -p ./roles -r roles.yml`
@@ -52,10 +40,10 @@ This role uses two tags: **build** and **configure**
 
 Argument | Required | Default | Description
 ---------|----------|---------|------------
-user | no | root | User for which pyenv, Python, and Python modules will be installed
-activate | no | no | Whether or not to activate the Python version
-python_version | yes |  | Version of Python to install
-python_modules | no | [ ] | List of Python modules to install (skipped if `python_version` is "system")
+sansible_pyenv_user | no | root | User for which pyenv, Python, and Python modules will be installed
+sansible_pyenv_activate | no | no | Whether or not to activate the Python version
+sansible_pyenv_python_version | yes |  | Version of Python to install
+sansible_pyenv_python_modules | no | [] | List of Python modules to install (skipped if `sansible_pyenv_python_version` is "system")
 
 
 ## Examples
@@ -77,18 +65,17 @@ Install Python 2.7.14, Python modules ansible, ansible-lint, six, and activate t
 
   roles:
     - role: sansible.pyenv
-      sansible_pyenv:
-        user: jenkins
-        activate: yes
-        python_version: 2.7.14
-        python_modules:
-          - ansible
-          - ansible-lint
-          - six
+      sansible_pyenv_activate: yes
+      sansible_pyenv_python_modules:
+        - ansible
+        - ansible-lint
+        - six
+      sansible_pyenv_user: jenkins
+      sansible_pyenv_python_version: 2.7.14      
 ```
 
 
 ## Development & Testing
 
 If you want to work on this role, please start with running
-`make watch`. This will re-provision vagrant box on any file changes.
+`make watch`. This will re-provision docker images on any file changes.
