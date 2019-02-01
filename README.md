@@ -23,7 +23,7 @@ or add this to your `roles.yml`
 
 ```YAML
 - name: sansible.pyenv
-  version: v2.0
+  version: v2.1.x
 ```
 
 and run `ansible-galaxy install -p ./roles -r roles.yml`
@@ -71,9 +71,40 @@ Install Python 2.7.14, Python modules ansible, ansible-lint, six, and activate t
         - ansible-lint
         - six
       sansible_pyenv_user: jenkins
-      sansible_pyenv_python_version: 2.7.14      
+      sansible_pyenv_python_version: 2.7.14
 ```
 
+Install Pyenv globally for all users:
+
+```YAML
+- name: Install pyenv globally
+  hosts: sandbox
+
+  pre_tasks:
+    - name: Update apt
+      become: yes
+      apt:
+        cache_valid_time: 1800
+        update_cache: yes
+      tags:
+        - build
+
+  roles:
+    - role: sansible.pyenv
+      sansible_pyenv_global_install: yes
+      sansible_pyenv_installation_dir: /usr/local/bin/pyenv
+      sansible_pyenv_python_modules:
+        - ansible
+        - ansible-lint
+        - six
+      sansible_pyenv_python_version: 3.6.7
+```
+
+When installing globally the installation directory should be overridden (the 
+default is to use the root users home directory) in this instance 
+/usr/local/bin is used. When installed globally a global profile file is put 
+in place, defaulting to /etc/profile.d/pyenv.sh (can be overidden via the 
+sansible_pyenv_global_profile_file var)
 
 ## Development & Testing
 
