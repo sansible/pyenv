@@ -1,6 +1,9 @@
 ---
 
 sansible_pyenv_activate: no
+sansible_pyenv_global_install: no
+sansible_pyenv_global_profile_file: /etc/profile.d/pyenv.sh
+sansible_pyenv_installation_dir: ~/.pyenv
 sansible_pyenv_python_modules: []
 sansible_pyenv_python_version: ~
 sansible_pyenv_user: root

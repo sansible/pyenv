@@ -1,58 +1,91 @@
 ---
 
+- name: Assert Python Version was specified
+  assert:
+    that: sansible_pyenv_python_version is not none
+    msg: Python Version must be specified
+
 - name: Install Prerequisites for pyenv
   become: yes
   apt:
-    name: "{{ item }}"
+    name:
+      - build-essential
+      - curl
+      - git
+      - libbz2-dev
+      - libncurses5-dev
+      - libreadline-dev
+      - libsqlite3-dev
+      - libssl-dev
+      - llvm
+      - make
+      - python-setuptools
+      - tk-dev
+      - wget
+      - xz-utils
+      - zlib1g-dev
     state: present
-    update_cache: yes
-    cache_valid_time: 3600
-  with_items:
-    - build-essential
-    - curl
-    - git
-    - libbz2-dev
-    - libncurses5-dev
-    - libreadline-dev
-    - libsqlite3-dev
-    - libssl-dev
-    - llvm
-    - make
-    - tk-dev
-    - wget
-    - xz-utils
-    - zlib1g-dev
 
 - name: Install pyenv
   become: yes
   become_user: "{{ sansible_pyenv_user }}"
   git:
     clone: yes
-    dest: ~/.pyenv/
+    dest: "{{ sansible_pyenv_installation_dir }}"
     repo: https://github.com/pyenv/pyenv.git
     update: yes
     version: master
 
-- name: Enable pyenv
+- name: Enable global access to pyenv shim directory
+  become: yes
+  file:
+    path: "{{ sansible_pyenv_installation_dir }}/shims"
+    recurse: yes
+    mode: 0777
+  when: sansible_pyenv_global_install == true
+
+- name: Ensure install dir is expanded for pyenv single user
+  become: yes
+  become_user: "{{ sansible_pyenv_user }}"
+  shell: "echo {{ sansible_pyenv_installation_dir }}"
+  changed_when: false
+  register: sansible_pyenv_installation_dir_expanded
+  when: sansible_pyenv_global_install != true
+  tags:
+    - skip_ansible_lint
+
+- name: Enable pyenv single user
   become: yes
   become_user: "{{ sansible_pyenv_user }}"
   blockinfile:
     backup: yes
     block: |
-      export PYENV_ROOT="$HOME/.pyenv"
+      export PYENV_ROOT="{{ sansible_pyenv_installation_dir_expanded.stdout }}"
       export PATH="$PYENV_ROOT/bin:$PATH"
       eval "$(pyenv init -)"
     create: yes
     dest: ~/.profile
     marker: "# {mark} sansible.pyenv managed block"
     mode: 0640
+  when: sansible_pyenv_global_install != true
+
+- name: Enable pyenv globally
+  become: yes
+  copy:
+    content: |
+      export PYENV_ROOT="{{ sansible_pyenv_installation_dir }}"
+      export PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init -)"
+    dest: "{{ sansible_pyenv_global_profile_file }}"
+    mode: 0744
+  when: sansible_pyenv_global_install == true
 
 - name: Install Python
   become: yes
   become_user: "{{ sansible_pyenv_user }}"
   command: "bash -lc 'pyenv install {{ sansible_pyenv_python_version }}'"
   args:
-    creates: "~/.pyenv/versions/{{ sansible_pyenv_python_version }}/bin/python"
+    creates: "{{ sansible_pyenv_installation_dir }}/versions/{{ sansible_pyenv_python_version }}/bin/python"
   when: sansible_pyenv_python_version != "system"
 
 - name: Ensure requested Python Version is installed
@@ -69,9 +102,8 @@
   become: yes
   become_user: "{{ sansible_pyenv_user }}"
   pip:
-    executable: "~/.pyenv/versions/{{ sansible_pyenv_python_version }}/bin/pip"
-    name: "{{ item }}"
-  with_items: "{{ sansible_pyenv_python_modules }}"
+    executable: "{{ sansible_pyenv_installation_dir }}/versions/{{ sansible_pyenv_python_version }}/bin/pip"
+    name: "{{ sansible_pyenv_python_modules }}"
   when: sansible_pyenv_python_version != "system"
 
 - name: Fetch Current Global Python Version
