@@ -23,7 +23,7 @@ or add this to your `roles.yml`
 
 ```YAML
 - name: sansible.pyenv
-  version: v2.1.x
+  version: v2.2.x
 ```
 
 and run `ansible-galaxy install -p ./roles -r roles.yml`
@@ -40,11 +40,15 @@ This role uses two tags: **build** and **configure**
 
 Argument | Required | Default | Description
 ---------|----------|---------|------------
-sansible_pyenv_user | no | root | User for which pyenv, Python, and Python modules will be installed
 sansible_pyenv_activate | no | no | Whether or not to activate the Python version
-sansible_pyenv_python_version | yes |  | Version of Python to install
+sansible_pyenv_checksum | yes | See defaults | Checksum to verify download of Pyenv |
+sansible_pyenv_global_install | no | no | Whether or not to enable Pyenv for global usage |
+sansible_pyenv_global_profile_file | no | /etc/profile.d/pyenv.sh | Profile to enable Pyenv globally |
+sansible_pyenv_installation_dir | no | ~/.pyenv | Where to install Pyenv to |
 sansible_pyenv_python_modules | no | [] | List of Python modules to install (skipped if `sansible_pyenv_python_version` is "system")
-
+sansible_pyenv_python_version | yes |  | Version of Python to install
+sansible_pyenv_user | no | root | User for which pyenv, Python, and Python modules will be installed
+sansible_pyenv_version | no | v1.2.9 | Version of Pyenv to install |
 
 ## Examples
 
